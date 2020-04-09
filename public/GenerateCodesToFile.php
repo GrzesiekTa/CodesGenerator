@@ -1,9 +1,14 @@
 <?php
-try {
-    include('Utils/RandomCodesGenerator.php');
-    include('Utils/FilesManager.php');
 
-    $errors = '';
+include __DIR__ . '/../vendor/autoload.php';
+
+use App\RandomCodesGenerator;
+use App\FilesManager;
+use App\Exceptions\PermissionException;
+use App\Exceptions\InvaliidParametersException;
+
+try {
+    $message = '';
 
     $givenArguments = getopt("", ["numberOfCodes:", "lenghtOfCode:", "file:"]);
     $numberOfCodes = isset($givenArguments['numberOfCodes']) ? (int) $givenArguments['numberOfCodes'] : null;
@@ -11,19 +16,19 @@ try {
     $file = $givenArguments['file'] ?? null;
 
     if (!$numberOfCodes) {
-        $errors .= 'numberOfCodes parameter is required' . PHP_EOL;
+        $message .= 'numberOfCodes parameter is required' . PHP_EOL;
     }
 
     if (!$lenghtOfCode) {
-        $errors .= 'lenghtOfCode parameter is required' . PHP_EOL;
+        $message .= 'lenghtOfCode parameter is required' . PHP_EOL;
     }
 
     if (!$file) {
-        $errors .= 'file parameter is required' . PHP_EOL;
+        $message .= 'file parameter is required' . PHP_EOL;
     }
 
-    if ($errors != '') {
-        echo $errors;
+    if ($message != '') {
+        echo $message;
         return;
     }
 
@@ -34,10 +39,17 @@ try {
 
     $filesManager = new FilesManager();
     $filesManager->save($fileAbsolutePathOnServer, implode(PHP_EOL, $codes));
+
+    $message = "Success i save $numberOfCodes codes to file: $fileAbsolutePathOnServer";
+} catch (InvaliidParametersException $ex) {
+    $message = $ex->getMessage();
+    $error = true;
+} catch (PermissionException $ex) {
+    $message = $ex->getMessage();
+    $error = true;
 } catch (\Exception $ex) {
-    //logs TODO
-    echo 'something went wrong...';
-    return;
+    $message = $ex->getMessage();
+    $error = true;
 }
 
-echo "I save $numberOfCodes codes to file: $fileAbsolutePathOnServer";
+echo $message;

@@ -1,6 +1,15 @@
 <?php
+include __DIR__ . '/../vendor/autoload.php';
+
+use App\RandomCodesGenerator;
+use App\FilesManager;
+use App\Exceptions\PermissionException;
+use App\Exceptions\InvaliidParametersException;
+
 $linkForCode = null;
 $error = false;
+$errorMessage = 'Ups coś poszło nie tak...';
+
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $lenghtOfCode = $_POST['lenghtOfCode'] ?? null;
     $numberOfCodes = $_POST['numberOfCodes'] ?? null;
@@ -10,19 +19,21 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 
     try {
         if ($lenghtOfCode && $numberOfCodes) {
-            include('Utils/RandomCodesGenerator.php');
-            include('Utils/FilesManager.php');
-
             $randomCodesGenerator = new RandomCodesGenerator();
             $codes = $randomCodesGenerator->generateCodes($lenghtOfCode, $numberOfCodes, true);
             $filesManager = new FilesManager();
             $filesManager->save($fileAbsolutePathOnServer, implode(PHP_EOL, $codes));
             $linkForCode = true;
         }
-    } catch (\Exception $ex) {
-        //logs TODO
+    } catch (InvaliidParametersException $ex) {
+        $errorMessage = $ex->getMessage();
         $error = true;
-        $linkForCode = false;
+    } catch (PermissionException $ex) {
+        $errorMessage = $ex->getMessage();
+        $error = true;
+    } catch (\Exception $ex) {
+        $errorMessage = 'Something went wrong';
+        $error = true;
     }
 }
 ?>
@@ -68,7 +79,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     <?php endif; ?>
 
     <?php if ($error) : ?>
-        <div class="message message-error">Ups coś poszło nie tak...</div>
+        <div class="message message-error"><?php echo $errorMessage; ?></div>
     <?php endif; ?>
 </body>
 

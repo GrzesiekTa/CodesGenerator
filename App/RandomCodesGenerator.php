@@ -1,5 +1,9 @@
 <?php
 
+namespace App;
+
+use App\Exceptions\InvaliidParametersException;
+
 class RandomCodesGenerator
 {
     /**
@@ -18,6 +22,10 @@ class RandomCodesGenerator
      */
     public function generateCode(int $lenghtOfCode): string
     {
+        if ($lenghtOfCode <= 0) {
+            throw new InvaliidParametersException('Lenght of code must be greater than 0');
+        }
+
         $charactersLength = $this->getPossibleCharactersLength();
         $randomcode = '';
 
@@ -40,6 +48,10 @@ class RandomCodesGenerator
     public function generateCodes(int $lenghtOfCode, int $numberOfCodes, bool $unique = false): array
     {
         $codesArray = [];
+
+        if ($numberOfCodes <= 0) {
+            throw new InvaliidParametersException('Number of codes must be greater than 0');
+        }
 
         if ($unique) {
             $numberOfRandomCodes = 0;

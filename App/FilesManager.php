@@ -1,5 +1,9 @@
 <?php
 
+namespace App;
+
+use App\Exceptions\PermissionException;
+
 class FilesManager
 {
     /**
@@ -16,14 +20,14 @@ class FilesManager
         //create folder if not exist
         if (!file_exists($folderLocation)) {
             if (!mkdir($folderLocation, 0777, true)) {
-                throw new \Exception('mkdir file error');
+                throw new PermissionException();
             }
         }
 
         $fp = fopen($fileAbsolutePathOnServer, "w");
 
         if (!$fp) {
-            throw new \Exception('failed to open file: ' . $fileAbsolutePathOnServer);
+            throw new PermissionException();
         }
 
         fwrite($fp, $content);
