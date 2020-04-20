@@ -2,9 +2,10 @@
 require __DIR__ . '/../vendor/autoload.php';
 
 use App\RandomCodesGenerator;
-use App\FilesManager;
 use App\Exceptions\PermissionException;
 use App\Exceptions\InvaliidParametersException;
+use App\Sender\SenderToFile;
+use App\Sender\SenderManager;
 
 try {
     $message = '';
@@ -32,12 +33,12 @@ try {
     }
 
     $fileAbsolutePathOnServer = (dirname(__FILE__)) . $file;
-
     $randomCodesGenerator = new RandomCodesGenerator();
     $codes = $randomCodesGenerator->generateCodes($lenghtOfCode, $numberOfCodes, true);
 
-    $filesManager = new FilesManager();
-    $filesManager->save($fileAbsolutePathOnServer, implode(PHP_EOL, $codes));
+    $senderToFile = new SenderToFile($fileAbsolutePathOnServer, implode(PHP_EOL, $codes));
+    $senderManager = (new SenderManager())->addSender($senderToFile);
+    $senderManager->send();
 
     $message = "Success i save $numberOfCodes codes to file: $fileAbsolutePathOnServer";
 } catch (InvaliidParametersException $ex) {

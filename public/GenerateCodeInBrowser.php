@@ -2,9 +2,11 @@
 require __DIR__ . '/../vendor/autoload.php';
 
 use App\RandomCodesGenerator;
-use App\FilesManager;
 use App\Exceptions\PermissionException;
 use App\Exceptions\InvaliidParametersException;
+use App\Sender\SenderManager;
+use App\Sender\SenderToFile;
+
 
 $linkForCode = null;
 $error = false;
@@ -21,8 +23,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         if ($lenghtOfCode && $numberOfCodes) {
             $randomCodesGenerator = new RandomCodesGenerator();
             $codes = $randomCodesGenerator->generateCodes($lenghtOfCode, $numberOfCodes, true);
-            $filesManager = new FilesManager();
-            $filesManager->save($fileAbsolutePathOnServer, implode(PHP_EOL, $codes));
+
+            $senderToFile = new SenderToFile($fileAbsolutePathOnServer, implode(PHP_EOL, $codes));
+            $senderManager = (new SenderManager())->addSender($senderToFile);
+            $senderManager->send();
+
             $linkForCode = true;
         }
     } catch (InvaliidParametersException $ex) {
